@@ -37,13 +37,17 @@ assert not np.any(np.isnan(y))
 assert not np.any(np.isinf(X))
 assert not np.any(np.isinf(y))
 
+
 # splits
-X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.2, random_state=42)
-X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
+                                                # Omitted for lack of data
+# ==================================================================================================== #
+#X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.2, random_state=42)
+#X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
 
 # shapes of splits
-print(f"X Train: {X_train.shape}, X Val: {X_val.shape}, X Test: {X_test.shape}")
-print(f"y Train: {y_train.shape}, y Val: {y_val.shape}, y Test: {y_test.shape}")
+#print(f"X Train: {X_train.shape}, X Val: {X_val.shape}, X Test: {X_test.shape}")
+#print(f"y Train: {y_train.shape}, y Val: {y_val.shape}, y Test: {y_test.shape}")
+# ==================================================================================================== #
 
 
 # Design model
@@ -59,12 +63,36 @@ model.compile(optimizer = 'adam', loss = 'mean_squared_error')
 
 # 
 # train model # NOTE: done on X and y and not X_train, y_train
-model.fit(X_train, y_train, epochs = 1000, batch_size = 22)
+model.fit(X, y, epochs = 1000, batch_size = 22)
 
-test_rgb = np.array([[11,170,132]]) / 255
+def predict_mix(rgb: np.ndarray):
+    """
+    Takes an np.ndarray input [[INT, INT, INT]] between 0 and 255
+    divides it by 255 and predicts the base color mix ratio for that color.
+    """
 
-print(model.predict(test_rgb))
+    for channel in rgb[0]:
+        if channel < 0 > 255:
+            raise Exception("RGB values can not be below 0 or above 255")
+    rgb = rgb / 255
 
+    return np.round(model.predict(rgb), 2)
+import os
+
+# 1. Convert the model to TFLite
+converter = tf.lite.TFLiteConverter.from_keras_model(model)
+tflite_model = converter.convert()  # The warning is normal and can be ignored
+
+# 2. Create the directory if it doesn't exist
+target_dir = "C:/Users/Jakal/cuddlefish/models"
+os.makedirs(target_dir, exist_ok=True)  # This creates the directory if needed
+
+# 3. Save the model
+tflite_path = os.path.join(target_dir, "cuddlefish.tflite")
+with open(tflite_path, 'wb') as f:
+    f.write(tflite_model)
+
+print(f"Model successfully saved to {tflite_path}")
 
 
 
