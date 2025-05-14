@@ -59,7 +59,7 @@ model = Sequential([
     keras.layers.Dense(5, activation='softmax')       # output has 5 neurons # softmax to produce probabilities
     ])
 
-model.compile(optimizer = 'adam', loss = 'mean_squared_error')
+model.compile(optimizer = 'adam', loss = 'categorical_crossentropy')
 
 # 
 # train model # NOTE: done on X and y and not X_train, y_train
@@ -77,22 +77,5 @@ def predict_mix(rgb: np.ndarray):
     rgb = rgb / 255
 
     return np.round(model.predict(rgb), 2)
-import os
-
-# 1. Convert the model to TFLite
-converter = tf.lite.TFLiteConverter.from_keras_model(model)
-tflite_model = converter.convert()  # The warning is normal and can be ignored
-
-# 2. Create the directory if it doesn't exist
-target_dir = "C:/Users/Jakal/cuddlefish/models"
-os.makedirs(target_dir, exist_ok=True)  # This creates the directory if needed
-
-# 3. Save the model
-tflite_path = os.path.join(target_dir, "cuddlefish.tflite")
-with open(tflite_path, 'wb') as f:
-    f.write(tflite_model)
-
-print(f"Model successfully saved to {tflite_path}")
-
 
 
